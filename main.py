@@ -48,3 +48,15 @@ app.include_router(recuperacao_router)
 def inicio():
     # Retorna uma mensagem quando acessamos a página inicial.
     return {"mensagem": "Entretempos funcionando!"}
+
+from fastapi.middleware.cors import CORSMiddleware
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=[
+        "https://entretempos.vercel.app"
+    ],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
