@@ -1,4 +1,4 @@
-const API_BASE = localStorage.getItem('entretempos_api') || 'http://127.0.0.1:8000';
+const API_BASE = 'https://entretempos.onrender.com';
 const $ = s => document.querySelector(s), $$ = s => [...document.querySelectorAll(s)];
 const state = { token: localStorage.getItem('entretempos_token'), name: localStorage.getItem('entretempos_name') || 'Estudante', groups: [], tasks: [], group: '', coins: 0, timer: null, seconds: 1500, total: 1500, minutes: 25, running: false, profileExists: false }; let toastTimer;
 function toast(msg, error = false) { const el = $('#toast'); el.textContent = msg; el.style.background = error ? '#9b3e32' : '#33271f'; clearTimeout(toastTimer); toastTimer = setTimeout(() => el.textContent = '', 4200) }
