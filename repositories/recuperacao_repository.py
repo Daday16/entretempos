@@ -1,13 +1,15 @@
 
-# Importa a função responsável por conectar o sistema ao MySQL.
 from database.conexao import conectar_banco
+from psycopg2.extras import RealDictCursor
 
 
 def criar_recuperacao(fk_usuario, codigo, expira_em):
     banco = conectar_banco()
-    cursor = banco.cursor()
+    cursor = None
 
     try:
+        cursor = banco.cursor()
+
         comando = """
             INSERT INTO recuperacao_senha
             (fk_usuario, codigo, expira_em)
@@ -24,15 +26,18 @@ def criar_recuperacao(fk_usuario, codigo, expira_em):
         raise
 
     finally:
-        cursor.close()
+        if cursor:
+            cursor.close()
         banco.close()
 
 
 def buscar_recuperacao(fk_usuario, codigo):
     banco = conectar_banco()
-    cursor = banco.cursor(dictionary=True)
+    cursor = None
 
     try:
+        cursor = banco.cursor(cursor_factory=RealDictCursor)
+
         comando = """
             SELECT *
             FROM recuperacao_senha
@@ -49,15 +54,18 @@ def buscar_recuperacao(fk_usuario, codigo):
         return cursor.fetchone()
 
     finally:
-        cursor.close()
+        if cursor:
+            cursor.close()
         banco.close()
 
 
 def marcar_como_usada(id_recuperacao):
     banco = conectar_banco()
-    cursor = banco.cursor()
+    cursor = None
 
     try:
+        cursor = banco.cursor()
+
         comando = """
             UPDATE recuperacao_senha
             SET usado = TRUE
@@ -72,5 +80,6 @@ def marcar_como_usada(id_recuperacao):
         raise
 
     finally:
-        cursor.close()
+        if cursor:
+            cursor.close()
         banco.close()

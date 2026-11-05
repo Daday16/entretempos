@@ -1,138 +1,120 @@
-# Importa a função que cria a conexão com o nosso banco MySQL.
+
+# Importa a função que cria a conexão com o PostgreSQL.
 from database.conexao import conectar_banco
 
+from psycopg2.extras import RealDictCursor
 
-# Cria uma função responsável por buscar todos os usuários.
+
+# Lista todos os usuários cadastrados.
 def listar_usuarios():
 
-    # Abre uma conexão com o banco de dados.
     banco = conectar_banco()
 
-    # Cria um cursor que retorna os resultados como dicionários.
-    cursor = banco.cursor(dictionary=True)
+    try:
+        cursor = banco.cursor(cursor_factory=RealDictCursor)
 
-    # Envia para o MySQL um comando pedindo todos os usuários.
-    cursor.execute("SELECT * FROM usuarios")
+        cursor.execute("SELECT * FROM usuarios")
 
-    # Guarda os usuários encontrados.
-    usuarios = cursor.fetchall()
+        usuarios = cursor.fetchall()
 
-    # Fecha o cursor.
-    cursor.close()
+        return usuarios
 
-    # Fecha a conexão com o banco.
-    banco.close()
-
-    # Devolve os usuários encontrados.
-    return usuarios
+    finally:
+        cursor.close()
+        banco.close()
 
 
-# Cria uma função responsável por salvar um novo usuário no banco.
+# Salva um novo usuário no banco.
 def criar_usuario(usuario):
 
-    # Abre uma conexão com o banco de dados.
     banco = conectar_banco()
 
-    # Cria um cursor para enviar comandos SQL ao MySQL.
-    cursor = banco.cursor()
+    try:
+        cursor = banco.cursor()
 
-    # Comando SQL que insere um novo usuário na tabela.
-    comando = """
-        INSERT INTO usuarios
-        (nome_usuario, email, senha, data_cadastro, data_nascimento)
-        VALUES (%s, %s, %s, %s, %s)
-    """
+        comando = """
+            INSERT INTO usuarios
+            (nome_usuario, email, senha, data_cadastro, data_nascimento)
+            VALUES (%s, %s, %s, %s, %s)
+        """
 
-    # Os valores são enviados separadamente do comando SQL.
-    valores = (
-        usuario.nome_usuario,
-        usuario.email,
-        usuario.senha,
-        usuario.data_cadastro,
-        usuario.data_nascimento
-    )
+        valores = (
+            usuario.nome_usuario,
+            usuario.email,
+            usuario.senha,
+            usuario.data_cadastro,
+            usuario.data_nascimento
+        )
 
-    # Executa o comando.
-    cursor.execute(comando, valores)
+        cursor.execute(comando, valores)
 
-    # Confirma a alteração no banco de dados.
-    banco.commit()
+        banco.commit()
 
-    # Fecha o cursor.
-    cursor.close()
+    except Exception:
+        banco.rollback()
+        raise
 
-    # Fecha a conexão com o banco.
-    banco.close()
+    finally:
+        cursor.close()
+        banco.close()
 
 
-# Cria uma função para procurar um usuário pelo e-mail.
+# Busca um usuário pelo e-mail.
 def buscar_por_email(email):
 
-    # Abre uma conexão com o banco de dados.
     banco = conectar_banco()
 
-    # Cria um cursor que retorna o resultado como dicionário.
-    cursor = banco.cursor(dictionary=True)
+    try:
+        cursor = banco.cursor(cursor_factory=RealDictCursor)
 
-    # Comando SQL para procurar o usuário pelo e-mail.
-    comando = """
-        SELECT *
-        FROM usuarios
-        WHERE email = %s
-    """
+        comando = """
+            SELECT *
+            FROM usuarios
+            WHERE email = %s
+        """
 
-    # Executa o comando usando o e-mail recebido.
-    cursor.execute(comando, (email,))
+        cursor.execute(comando, (email,))
 
-    # Pega o primeiro usuário encontrado.
-    usuario = cursor.fetchone()
+        usuario = cursor.fetchone()
 
-    # Fecha o cursor.
-    cursor.close()
+        return usuario
 
-    # Fecha a conexão com o banco.
-    banco.close()
-
-    # Devolve o usuário encontrado.
-    return usuario
+    finally:
+        cursor.close()
+        banco.close()
 
 
-# Cria uma função para atualizar a senha de um usuário.
+# Atualiza a senha de um usuário.
 def atualizar_senha(id_usuario, nova_senha):
 
-    # Abre uma conexão com o banco de dados.
     banco = conectar_banco()
 
-    # Cria um cursor para enviar o comando SQL.
-    cursor = banco.cursor()
+    try:
+        cursor = banco.cursor()
 
-    # Comando SQL que troca a senha do usuário.
-    comando = """
-        UPDATE usuarios
-        SET senha = %s
-        WHERE id_usuario = %s
-    """
+        comando = """
+            UPDATE usuarios
+            SET senha = %s
+            WHERE id_usuario = %s
+        """
 
-    # Valores que serão enviados para o MySQL.
-    valores = (
-        nova_senha,
-        id_usuario
-    )
+        valores = (
+            nova_senha,
+            id_usuario
+        )
 
-    # Executa a atualização.
-    cursor.execute(comando, valores)
+        cursor.execute(comando, valores)
 
-    # Confirma a alteração no banco.
-    banco.commit()
+        banco.commit()
 
-    # Guarda quantas linhas foram alteradas.
-    quantidade_alterada = cursor.rowcount
+        quantidade_alterada = cursor.rowcount
 
-    # Fecha o cursor.
-    cursor.close()
+        return quantidade_alterada
 
-    # Fecha a conexão com o banco.
-    banco.close()
+    except Exception:
+        banco.rollback()
+        raise
 
-    # Devolve a quantidade de usuários alterados.
-    return quantidade_alterada
+    finally:
+        cursor.close()
+        banco.close()

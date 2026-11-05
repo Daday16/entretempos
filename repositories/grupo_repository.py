@@ -1,103 +1,81 @@
-# Importa a função que abre a conexão com o banco de dados.
 from database.conexao import conectar_banco
+from psycopg2.extras import RealDictCursor
 
 
-# Cria a função responsável por salvar um grupo no MySQL.
 def criar_grupo(grupo):
-
-    # Abre uma conexão com o banco de dados.
     banco = conectar_banco()
+    cursor = None
 
-    # Cria um cursor para executar comandos SQL.
-    cursor = banco.cursor()
+    try:
+        cursor = banco.cursor()
 
-    # Comando SQL que adiciona um novo grupo na tabela grupos.
-    comando = """
-        INSERT INTO grupos
-        (
-            titulo,
-            fk_usuario
+        comando = """
+            INSERT INTO grupos (titulo, fk_usuario)
+            VALUES (%s, %s)
+        """
+
+        valores = (
+            grupo.titulo,
+            grupo.fk_usuario
         )
-        VALUES (%s, %s)
-    """
 
-    # Coloca os dados do grupo na mesma ordem das colunas acima.
-    valores = (
-        grupo.titulo,
-        grupo.fk_usuario
-    )
+        cursor.execute(comando, valores)
+        banco.commit()
 
-    # Envia o comando e os dados para o MySQL.
-    cursor.execute(comando, valores)
+    except Exception:
+        banco.rollback()
+        raise
 
-    # Confirma a alteração para salvar o grupo.
-    banco.commit()
+    finally:
+        if cursor:
+            cursor.close()
+        banco.close()
 
-    # Fecha o cursor.
-    cursor.close()
 
-    # Fecha a conexão com o banco.
-    banco.close()
-
-# Cria a função responsável por buscar os grupos de um usuário.
 def buscar_grupos_por_usuario(fk_usuario):
-
-    # Abre uma conexão com o banco de dados.
     banco = conectar_banco()
+    cursor = None
 
-    # Cria um cursor que retorna os dados como dicionário.
-    cursor = banco.cursor(dictionary=True)
+    try:
+        cursor = banco.cursor(cursor_factory=RealDictCursor)
 
-    # Comando SQL que busca somente os grupos do usuário informado.
-    comando = """
-        SELECT *
-        FROM grupos
-        WHERE fk_usuario = %s
-    """
+        comando = """
+            SELECT *
+            FROM grupos
+            WHERE fk_usuario = %s
+        """
 
-    # Executa a consulta usando o ID do usuário.
-    cursor.execute(comando, (fk_usuario,))
+        cursor.execute(comando, (fk_usuario,))
+        grupos = cursor.fetchall()
 
-    # Guarda todos os grupos encontrados.
-    grupos = cursor.fetchall()
+        return grupos
 
-    # Fecha o cursor.
-    cursor.close()
+    finally:
+        if cursor:
+            cursor.close()
+        banco.close()
 
-    # Fecha a conexão com o banco.
-    banco.close()
 
-    # Retorna os grupos encontrados.
-    return grupos
-
-# Cria uma função para verificar se um grupo pertence a um usuário.
 def verificar_grupo_usuario(fk_grupo, fk_usuario):
-
-    # Abre uma conexão com o banco de dados.
     banco = conectar_banco()
+    cursor = None
 
-    # Cria um cursor para executar comandos SQL.
-    cursor = banco.cursor(dictionary=True)
+    try:
+        cursor = banco.cursor(cursor_factory=RealDictCursor)
 
-    # Comando SQL que procura o grupo pertencente ao usuário.
-    comando = """
-        SELECT *
-        FROM grupos
-        WHERE id_grupo = %s
-        AND fk_usuario = %s
-    """
+        comando = """
+            SELECT *
+            FROM grupos
+            WHERE id_grupo = %s
+              AND fk_usuario = %s
+        """
 
-    # Executa a consulta usando o ID do grupo e do usuário.
-    cursor.execute(comando, (fk_grupo, fk_usuario))
+        cursor.execute(comando, (fk_grupo, fk_usuario))
+        grupo = cursor.fetchone()
 
-    # Busca o grupo encontrado.
-    grupo = cursor.fetchone()
+        return grupo
 
-    # Fecha o cursor.
-    cursor.close()
-
-    # Fecha a conexão com o banco.
-    banco.close()
-
-    # Retorna o grupo encontrado ou None.
-    return grupo
+    finally:
+        if cursor:
+            cursor.close()
+        banco.close()
