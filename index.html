@@ -1,0 +1,242 @@
+<!doctype html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <title>Entretempos • Ninho do Foco</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+
+<body>
+    <section id="auth" class="auth">
+        <div class="auth-art">
+            <div class="logo"><b>e.</b> entretempos</div>
+            <div class="big-squirrel">🐿️</div>
+            <p class="kicker">SEU TEMPO, SEU RITMO</p>
+            <h1>Pequenos passos.<br><em>Grandes conquistas.</em></h1>
+            <p>Estude com leveza, acompanhe seu progresso e celebre cada avanço com o Pipo.</p>
+            <div class="bottom-note">✦ Um dia de cada vez.</div>
+        </div>
+        <div class="auth-content">
+            <div class="logo mobile-logo"><b>e.</b> entretempos</div>
+            <div class="auth-box">
+                <div class="tabs"><button class="selected" data-tab="login">Entrar</button><button
+                        data-tab="register">Criar conta</button></div>
+                <div id="login"><span class="kicker">BEM-VINDA DE VOLTA</span>
+                    <h2>Oi! Vamos continuar?</h2>
+                    <p class="muted">Entre no seu cantinho de estudos.</p>
+                    <form id="loginForm"><label>E-mail<input name="email" type="email" placeholder="voce@email.com"
+                                required></label><label>Senha<input name="senha" type="password" placeholder="Sua senha"
+                                required></label><button type="button" class="link" id="forgot">Esqueci minha
+                            senha</button><button class="primary wide">Entrar <span>→</span></button></form>
+                </div>
+                <div id="register" class="hidden"><span class="kicker">SEU NINHO COMEÇA AQUI</span>
+                    <h2>Vamos nos conhecer!</h2>
+                    <p class="muted">Crie sua conta e comece sua trilha.</p>
+                    <form id="registerForm"><label>Seu nome<input name="nome_usuario"
+                                placeholder="Como podemos te chamar?" required></label><label>E-mail<input name="email"
+                                type="email" placeholder="voce@email.com" required></label><label>Data de
+                            nascimento<input name="data_nascimento" type="date" required></label><label>Senha<input
+                                name="senha" type="password" minlength="8" placeholder="8 caracteres, número e símbolo"
+                                required></label><button class="primary wide">Criar minha conta <span>→</span></button>
+                    </form>
+                </div>
+                <p class="footnote">Feito com carinho para você e o seu tempo. ♡</p>
+            </div>
+        </div>
+    </section>
+    <div id="app" class="layout hidden">
+        <aside class="sidebar">
+            <div class="logo"><b>e.</b> entretempos</div>
+            <p class="side-caption">SEU ESPAÇO</p>
+            <nav><button class="nav active" data-page="home">⌂ <span>Ninho do Foco</span></button><button class="nav"
+                    data-page="trilha">⌁ <span>A Trilha</span></button><button class="nav" data-page="focus">◷
+                    <span>Modo Foco</span></button><button class="nav" data-page="shop">♧ <span>Loja do
+                        Pipo</span></button><button class="nav" data-page="profile">◎ <span>Meu perfil</span></button>
+            </nav>
+            <div class="side-pipo">
+                <div>🐿️</div><strong>Oi, sou o Pipo!</strong>
+                <p>Vamos dar mais um passinho hoje?</p>
+            </div><button class="nav logout" id="logout">↪ <span>Sair da conta</span></button>
+        </aside>
+        <main class="main">
+            <header class="topbar">
+                <div>
+                    <p id="today" class="muted small"></p>
+                    <h1 id="heading">Bem-vinda ao seu ninho! <span>✦</span></h1>
+                </div>
+                <div class="user">
+                    <div class="avatar" id="avatar">P</div>
+                    <div><strong id="username">Estudante</strong><small>Exploradora nível 1</small></div>
+                </div>
+            </header>
+            <section id="page-home" class="page">
+                <div class="hero">
+                    <div><span class="kicker">SEU CANTINHO DE CONQUISTAS</span>
+                        <h2>Olá, <span id="helloName">exploradora</span>!<br>O Pipo acredita em você. 🧡</h2>
+                        <p>Cada minuto dedicado a você já é uma vitória.</p><button class="light-button"
+                            data-go="trilha">Ver minha trilha <b>→</b></button>
+                    </div>
+                    <div class="hero-pipo">🐿️<span class="sparkle s1">✦</span><span class="sparkle s2">✧</span>
+                        <div class="speech">Você consegue!</div>
+                    </div>
+                </div>
+                <div class="section-title">
+                    <div>
+                        <h2>Seu progresso</h2>
+                        <p>Olha só o que você está construindo.</p>
+                    </div>
+                </div>
+                <div class="stats">
+                    <article class="stat">
+                        <div class="stat-icon orange">✧</div><span>Seu saldo</span><strong id="coins">0
+                            <small>nozes</small></strong>
+                        <p>Recompensas conquistadas</p>
+                    </article>
+                    <article class="stat">
+                        <div class="stat-icon green">✓</div><span>Tarefas no grupo</span><strong
+                            id="taskTotal">0</strong>
+                        <p>Um passo de cada vez</p>
+                    </article>
+                    <article class="stat">
+                        <div class="stat-icon peach">◷</div><span>Tempo de foco</span><strong id="focusTotal">25
+                            <small>min</small></strong>
+                        <p>Reserve um momento para você</p>
+                    </article>
+                </div>
+                <div class="columns">
+                    <section class="card">
+                        <div class="card-head">
+                            <div>
+                                <h3>Trilha do dia</h3>
+                                <p>Pequenas tarefas, grandes avanços.</p>
+                            </div><button class="round-btn" data-go="trilha">↗</button>
+                        </div>
+                        <div id="homeTasks" class="tasks">
+                            <div class="empty">Crie um grupo e adicione sua primeira tarefa.</div>
+                        </div>
+                    </section>
+                    <section class="card pipo-card">
+                        <div class="pipo-mini">🐿️</div><span class="kicker">LEMBRETE DO PIPO</span>
+                        <h3>Não precisa ser perfeito.</h3>
+                        <p>Você só precisa começar. Pausas também fazem parte do caminho.</p><button
+                            class="primary wide" data-go="focus">Começar uma sessão de foco →</button>
+                    </section>
+                </div>
+            </section>
+            <section id="page-trilha" class="page hidden">
+                <div class="page-intro">
+                    <div><span class="kicker">PLANO DE ESTUDO</span>
+                        <h2>A Trilha <span>🌱</span></h2>
+                        <p>Organize seus próximos passos em um caminho que é só seu.</p>
+                    </div><button class="primary" id="newGroup">＋ Novo grupo</button>
+                </div>
+                <div class="toolbar"><label>Escolha sua trilha<select id="groupSelect">
+                            <option value="">Selecione um grupo</option>
+                        </select></label><button class="outline" id="newTask">＋ Adicionar tarefa</button><span
+                        id="taskCount" class="muted small"></span></div>
+                <div class="trail-card">
+                    <div class="trail-path"></div>
+                    <div id="taskList" class="tasks">
+                        <div class="empty">Crie um grupo para desenhar sua trilha.</div>
+                    </div>
+                </div>
+            </section>
+            <section id="page-focus" class="page hidden">
+                <div class="focus-layout">
+                    <section class="focus-screen"><span class="kicker">SEU MOMENTO, SEU RITMO</span>
+                        <h2>Modo Foco</h2>
+                        <p>Desacelere o mundo por alguns minutos.</p>
+                        <div class="dark-timer">
+                            <div class="timer-squirrel">🐿️</div><span id="modeLabel">TEMPO DE FOCO</span><strong
+                                id="timer">25:00</strong><small id="timerStatus">O Pipo está aqui com você.</small>
+                        </div>
+                        <div class="presets"><button class="chosen" data-min="25">25 min</button><button
+                                data-min="15">15 min</button><button data-min="5">5 min pausa</button></div>
+                        <div class="timer-buttons"><button class="primary" id="startTimer">Começar foco</button><button
+                                class="outline" id="resetTimer">Reiniciar</button></div>
+                        <p class="sound-note">✦ Silencie as notificações e cuide do seu foco.</p>
+                    </section>
+                    <aside class="card focus-advice">
+                        <div class="pipo-mini">🐿️</div>
+                        <h3>Uma coisa de cada vez.</h3>
+                        <p>Escolha uma tarefa, respire fundo e dê a si mesma a chance de tentar. Você não precisa
+                            resolver tudo hoje.</p>
+                        <div class="tip"><span>🌰</span>
+                            <div><strong>Suas nozes</strong>
+                                <p>Conclua suas sessões para acompanhar sua evolução.</p>
+                            </div>
+                        </div>
+                    </aside>
+                </div>
+            </section>
+            <section id="page-shop" class="page hidden">
+                <div class="shop-hero">
+                    <div><span class="kicker">UM MIMO PELO SEU ESFORÇO</span>
+                        <h2>Loja do Pipo 🐿️</h2>
+                        <p>Personalize seu companheiro de estudos com suas nozes.</p>
+                    </div>
+                    <div class="balance">🌰 <strong id="shopCoins">0</strong><small>suas nozes</small></div>
+                </div>
+                <div class="shop-categories"><button
+                        class="selected">Tudo</button><button>Roupinhas</button><button>Chapéus</button><button>Acessórios</button>
+                </div>
+                <div class="shop-grid" id="shopGrid"></div>
+                <p class="muted small shop-note">A loja visual é uma primeira versão. O saldo vem do backend; compras e
+                    inventário precisam de rotas próprias para persistir no banco.</p>
+            </section>
+            <section id="page-profile" class="page hidden">
+                <div class="page-intro">
+                    <div><span class="kicker">SEU JEITO DE APRENDER</span>
+                        <h2>Meu perfil <span>♡</span></h2>
+                        <p>Monte uma rotina que respeite seu ritmo.</p>
+                    </div>
+                </div>
+                <section class="card profile-card">
+                    <form id="profileForm"><label>Qual é seu principal objetivo?<textarea name="objetivo" rows="3"
+                                placeholder="Ex.: aprender programação, passar em uma prova..."
+                                required></textarea></label>
+                        <div class="form-row"><label>Nível de conhecimento<select name="nivel_conhecimento">
+                                    <option>Nenhum</option>
+                                    <option>Iniciante</option>
+                                    <option>Básico</option>
+                                    <option>Intermediário</option>
+                                    <option>Avançado</option>
+                                </select></label><label>Tempo disponível por dia<select name="tempo_diario">
+                                    <option value="15">15 minutos</option>
+                                    <option value="30">30 minutos</option>
+                                    <option value="45">45 minutos</option>
+                                    <option value="60">1 hora</option>
+                                    <option value="90">1h30</option>
+                                    <option value="120">2 horas</option>
+                                </select></label></div>
+                        <fieldset>
+                            <legend>Em quais dias você pode estudar?</legend>
+                            <div class="days"><label><input type="checkbox" value="Segunda">Segunda</label><label><input
+                                        type="checkbox" value="Terça">Terça</label><label><input type="checkbox"
+                                        value="Quarta">Quarta</label><label><input type="checkbox"
+                                        value="Quinta">Quinta</label><label><input type="checkbox"
+                                        value="Sexta">Sexta</label><label><input type="checkbox"
+                                        value="Sábado">Sábado</label><label><input type="checkbox"
+                                        value="Domingo">Domingo</label></div>
+                        </fieldset><label>O que mais dificulta seu foco?<textarea name="dificuldade_foco" rows="2"
+                                placeholder="Ex.: distrações, cansaço, dificuldade de começar..."></textarea></label><button
+                            class="primary">Salvar meu perfil →</button>
+                    </form>
+                </section>
+            </section>
+        </main>
+    </div>
+    <div id="toast" role="status"></div>
+    <div id="modal" class="modal-back hidden">
+        <div class="modal"><button id="closeModal" class="close">×</button><span class="kicker">VAMOS ORGANIZAR</span>
+            <h2 id="modalTitle">Novo item</h2>
+            <p id="modalDesc" class="muted"></p>
+            <form id="modalForm"></form>
+        </div>
+    </div>
+    <script src="app.js"></script>
+</body>
+
+</html>
