@@ -1,6 +1,7 @@
 # Importa o FastAPI para criar nossa aplicação.
 from fastapi import FastAPI
 
+
 # Importa as rotas de usuários.
 from routes.usuarios import router as usuarios_router
 
@@ -50,11 +51,13 @@ def inicio():
     return {"mensagem": "Entretempos funcionando!"}
 
 from fastapi.middleware.cors import CORSMiddleware
-
+from routes.apoio import router as apoio_router
+app.include_router(apoio_router)
 app.add_middleware(
     CORSMiddleware,
     allow_origins=[
-        "https://entretempos-ivory.vercel.app"
+        "https://entretempos-ivory.vercel.app",
+        "https://entretempos.onrender.com",
     ],
     allow_credentials=True,
     allow_methods=["*"],
