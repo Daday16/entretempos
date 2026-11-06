@@ -147,6 +147,7 @@ def excluir_tarefa(id_tarefa, fk_usuario):
         banco.close()
 
 
+
 def concluir_tarefa(id_tarefa, fk_usuario):
     banco = conectar_banco()
     cursor = None
@@ -154,6 +155,7 @@ def concluir_tarefa(id_tarefa, fk_usuario):
     try:
         cursor = banco.cursor()
 
+        # Atualiza somente tarefas que ainda não foram concluídas.
         comando = """
             UPDATE tarefas
             SET status = 'CONCLUIDA'
@@ -161,19 +163,35 @@ def concluir_tarefa(id_tarefa, fk_usuario):
             WHERE tarefas.fk_grupo = grupos.id_grupo
               AND tarefas.id_tarefa = %s
               AND grupos.fk_usuario = %s
+              AND UPPER(COALESCE(tarefas.status, '')) NOT IN (
+                  'CONCLUIDA',
+                  'CONCLUÍDA'
+              )
         """
 
-        valores = (
-            id_tarefa,
-            fk_usuario
-        )
-
-        cursor.execute(comando, valores)
+        cursor.execute(comando, (id_tarefa, fk_usuario))
         quantidade_alterada = cursor.rowcount
+
+        # Só credita as nozes se a tarefa foi concluída agora.
+        if quantidade_alterada == 1:
+            cursor.execute(
+                """
+                UPDATE usuarios
+                SET moedas = COALESCE(moedas, 0) + 10
+                WHERE id_usuario = %s
+                """,
+                (fk_usuario,)
+            )
+
+            if cursor.rowcount != 1:
+                raise Exception("Não foi possível creditar as nozes.")
 
         banco.commit()
 
-        return quantidade_alterada
+        return {
+            "alterada": quantidade_alterada,
+            "moedas_ganhas": 10 if quantidade_alterada == 1 else 0
+        }
 
     except Exception:
         banco.rollback()

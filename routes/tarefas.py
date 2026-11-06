@@ -146,25 +146,24 @@ def remover_tarefa(
     }
 
 # Cria a rota responsável por concluir uma tarefa.
+
 @router.put("/concluir/{id_tarefa}")
 def marcar_tarefa_concluida(
     id_tarefa: int,
     fk_usuario: int = Depends(obter_usuario_token)
 ):
-
-    # Envia os dados para o Service atualizar o status.
     resultado = tarefa_service.concluir_tarefa(
         id_tarefa,
         fk_usuario
     )
 
-    # Verifica se nenhuma tarefa foi alterada.
-    if resultado == 0:
+    if resultado["alterada"] == 0:
         return {
-            "mensagem": "Tarefa não encontrada ou sem permissão."
+            "mensagem": "Tarefa já concluída ou não encontrada.",
+            "moedas_ganhas": 0
         }
 
-    # Informa que a tarefa foi concluída.
     return {
-        "mensagem": "Tarefa concluída com sucesso!"
+        "mensagem": "Tarefa concluída com sucesso!",
+        "moedas_ganhas": resultado["moedas_ganhas"]
     }
