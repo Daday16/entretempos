@@ -5,109 +5,109 @@ const $ = s => document.querySelector(s);
 const $$ = s => [...document.querySelectorAll(s)];
 
 const state = {
-  token: localStorage.getItem('entretempos_token'),
-  name: localStorage.getItem('entretempos_name') || 'Estudante',
-  groups: [],
-  tasks: [],
-  group: '',
-  coins: 0,
-  timer: null,
-  seconds: 1500,
-  total: 1500,
-  minutes: 25,
-  running: false,
-  profileExists: false,
+    token: localStorage.getItem('entretempos_token'),
+    name: localStorage.getItem('entretempos_name') || 'Estudante',
+    groups: [],
+    tasks: [],
+    group: '',
+    coins: 0,
+    timer: null,
+    seconds: 1500,
+    total: 1500,
+    minutes: 25,
+    running: false,
+    profileExists: false,
 
-  // Conversa local com o Pipo
-  pipoHistory: [],
-  pipoSending: false
+    // Conversa local com o Pipo
+    pipoHistory: [],
+    pipoSending: false
 };
 
 let toastTimer;
 
 function toast(msg, error = false) {
-  const el = $('#toast');
-  if (!el) return;
+    const el = $('#toast');
+    if (!el) return;
 
-  el.textContent = msg;
-  el.style.background = error ? '#9b3e32' : '#33271f';
+    el.textContent = msg;
+    el.style.background = error ? '#9b3e32' : '#33271f';
 
-  clearTimeout(toastTimer);
-  toastTimer = setTimeout(() => el.textContent = '', 4200);
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(() => el.textContent = '', 4200);
 }
 
 function esc(v) {
-  return String(v ?? '').replace(/[&<>"']/g, c => ({
-    '&': '&amp;',
-    '<': '&lt;',
-    '>': '&gt;',
-    '"': '&quot;',
-    "'": '&#39;'
-  }[c]));
+    return String(v ?? '').replace(/[&<>"']/g, c => ({
+        '&': '&amp;',
+        '<': '&lt;',
+        '>': '&gt;',
+        '"': '&quot;',
+        "'": '&#39;'
+    }[c]));
 }
 
 function qs(data) {
-  const p = new URLSearchParams();
+    const p = new URLSearchParams();
 
-  Object.entries(data || {}).forEach(([k, v]) => {
-    if (v !== undefined && v !== null && v !== '') {
-      p.set(k, v);
-    }
-  });
+    Object.entries(data || {}).forEach(([k, v]) => {
+        if (v !== undefined && v !== null && v !== '') {
+            p.set(k, v);
+        }
+    });
 
-  return p.toString();
+    return p.toString();
 }
 
 async function api(path, {
-  method = 'GET',
-  data = {},
-  auth = true
+    method = 'GET',
+    data = {},
+    auth = true
 } = {}) {
-  let url = API_BASE + path;
-  const query = qs(data);
+    let url = API_BASE + path;
+    const query = qs(data);
 
-  if (query) url += '?' + query;
+    if (query) url += '?' + query;
 
-  let res;
+    let res;
 
-  try {
-    res = await fetch(url, {
-      method,
-      headers: auth && state.token
-        ? { Authorization: 'Bearer ' + state.token }
-        : {}
-    });
-  } catch {
-    throw Error(
-      'Não consegui conectar à API. Confira se o FastAPI está rodando em ' +
-      API_BASE + '.'
-    );
-  }
+    try {
+        res = await fetch(url, {
+            method,
+            headers: auth && state.token
+                ? { Authorization: 'Bearer ' + state.token }
+                : {}
+        });
+    } catch {
+        throw Error(
+            'Não consegui conectar à API. Confira se o FastAPI está rodando em ' +
+            API_BASE + '.'
+        );
+    }
 
-  let body;
+    let body;
 
-  try {
-    body = await res.json();
-  } catch {
-    body = {};
-  }
+    try {
+        body = await res.json();
+    } catch {
+        body = {};
+    }
 
-  if (!res.ok) {
-    throw Error(
-      body.detail ||
-      body.mensagem ||
-      `Erro HTTP ${res.status}`
-    );
-  }
+    if (!res.ok) {
+        throw Error(
+            body.detail ||
+            body.mensagem ||
+            `Erro HTTP ${res.status}`
+        );
+    }
 
-  if (
-    body?.mensagem &&
-    /(incorret|inválid|não encontrado|não foi|não pode|precisa|obrigat|expirad|já existe|sem permissão)/i.test(body.mensagem)
-  ) {
-    throw Error(body.mensagem);
-  }
+    if (
+        body?.mensagem &&
+        /(incorret|inválid|não encontrado|não foi|não pode|precisa|obrigat|expirad|já existe|sem permissão)/i.test(body.mensagem)
+    ) {
+        throw Error(body.mensagem);
+    }
 
-  return body;
+    return body;
 }
 
 // ==========================================
@@ -115,71 +115,71 @@ async function api(path, {
 // ==========================================
 
 function showAuth(tab = 'login') {
-  $('#auth').classList.remove('hidden');
-  $('#app').classList.add('hidden');
+    $('#auth').classList.remove('hidden');
+    $('#app').classList.add('hidden');
 
-  $('#login').classList.toggle('hidden', tab !== 'login');
-  $('#register').classList.toggle('hidden', tab !== 'register');
+    $('#login').classList.toggle('hidden', tab !== 'login');
+    $('#register').classList.toggle('hidden', tab !== 'register');
 
-  $$('[data-tab]').forEach(b =>
-    b.classList.toggle('selected', b.dataset.tab === tab)
-  );
+    $$('[data-tab]').forEach(b =>
+        b.classList.toggle('selected', b.dataset.tab === tab)
+    );
 }
 
 function enterApp() {
-  $('#auth').classList.add('hidden');
-  $('#app').classList.remove('hidden');
+    $('#auth').classList.add('hidden');
+    $('#app').classList.remove('hidden');
 
-  $('#username').textContent = state.name;
-  $('#helloName').textContent =
-    state.name.split(' ')[0] || 'exploradora';
+    $('#username').textContent = state.name;
+    $('#helloName').textContent =
+        state.name.split(' ')[0] || 'exploradora';
 
-  $('#avatar').textContent =
-    (state.name[0] || 'P').toUpperCase();
+    $('#avatar').textContent =
+        (state.name[0] || 'P').toUpperCase();
 
-  $('#today').textContent = new Date().toLocaleDateString(
-    'pt-BR',
-    {
-      weekday: 'long',
-      day: 'numeric',
-      month: 'long'
-    }
-  );
+    $('#today').textContent = new Date().toLocaleDateString(
+        'pt-BR',
+        {
+            weekday: 'long',
+            day: 'numeric',
+            month: 'long'
+        }
+    );
 
-  navigate('home');
-  refresh();
+    navigate('home');
+    refresh();
 }
 
 function logout() {
-  state.token = null;
+    state.token = null;
 
-  localStorage.removeItem('entretempos_token');
-  localStorage.removeItem('entretempos_name');
+    localStorage.removeItem('entretempos_token');
+    localStorage.removeItem('entretempos_name');
 
-  showAuth();
+    showAuth();
 }
 
 function navigate(page) {
-  $$('.page').forEach(p => p.classList.add('hidden'));
+    $$('.page').forEach(p => p.classList.add('hidden'));
 
-  $('#page-' + page)?.classList.remove('hidden');
+    $('#page-' + page)?.classList.remove('hidden');
 
-  $$('[data-page]').forEach(b =>
-    b.classList.toggle('active', b.dataset.page === page)
-  );
+    $$('[data-page]').forEach(b =>
+        b.classList.toggle('active', b.dataset.page === page)
+    );
 
-  const heads = {
-    home: 'Bem-vinda ao seu ninho! ✦',
-    trilha: 'Vamos desenhar sua trilha ✦',
-    focus: 'Seu momento de foco ✦',
-    shop: 'Recompensas do Pipo ✦',
-    profile: 'Seu perfil de estudos ✦'
-  };
+    const heads = {
+        home: 'Bem-vinda ao seu ninho! ✦',
+        trilha: 'Vamos desenhar sua trilha ✦',
+        focus: 'Seu momento de foco ✦',
+        shop: 'Recompensas do Pipo ✦',
+        profile: 'Seu perfil de estudos ✦'
+    };
 
-  $('#heading').textContent = heads[page] || 'Entretempos';
+    $('#heading').textContent = heads[page] || 'Entretempos';
 
-  if (page === 'trilha') renderTasks();
-  if (page === 'profile') loadProfile();
+    if (page === 'trilha') renderTasks();
+    if (page === 'profile') loadProfile();
 }
 
 // ==========================================
@@ -187,128 +187,128 @@ function navigate(page) {
 // ==========================================
 
 async function refresh() {
-  await Promise.allSettled([
-    loadGroups(),
-    loadCoins()
-  ]);
+    await Promise.allSettled([
+        loadGroups(),
+        loadCoins()
+    ]);
 
-  await loadTasks();
-  renderHome();
+    await loadTasks();
+    renderHome();
 }
 
 async function loadGroups() {
-  try {
-    const d = await api('/grupos/');
+    try {
+        const d = await api('/grupos/');
 
-    state.groups = Array.isArray(d) ? d : [];
+        state.groups = Array.isArray(d) ? d : [];
 
-    const s = $('#groupSelect');
-    const old = state.group || s.value;
+        const s = $('#groupSelect');
+        const old = state.group || s.value;
 
-    s.innerHTML =
-      '<option value="">Selecione um grupo</option>' +
-      state.groups.map(g =>
-        `<option value="${g.id_grupo}">
+        s.innerHTML =
+            '<option value="">Selecione um grupo</option>' +
+            state.groups.map(g =>
+                `<option value="${g.id_grupo}">
           ${esc(g.titulo || 'Grupo ' + g.id_grupo)}
         </option>`
-      ).join('');
+            ).join('');
 
-    if (
-      old &&
-      state.groups.some(g => String(g.id_grupo) === String(old))
-    ) {
-      state.group = String(old);
-    } else {
-      state.group = state.groups.length
-        ? String(state.groups[0].id_grupo)
-        : '';
+        if (
+            old &&
+            state.groups.some(g => String(g.id_grupo) === String(old))
+        ) {
+            state.group = String(old);
+        } else {
+            state.group = state.groups.length
+                ? String(state.groups[0].id_grupo)
+                : '';
+        }
+
+        s.value = state.group;
+
+    } catch (e) {
+        toast(e.message, true);
     }
-
-    s.value = state.group;
-
-  } catch (e) {
-    toast(e.message, true);
-  }
 }
 
 async function loadTasks() {
-  if (!state.group) {
-    state.tasks = [];
-    renderTasks();
-    renderHome();
-    return;
-  }
+    if (!state.group) {
+        state.tasks = [];
+        renderTasks();
+        renderHome();
+        return;
+    }
 
-  try {
-    const d = await api(
-      '/tarefas/grupo/' + encodeURIComponent(state.group)
-    );
+    try {
+        const d = await api(
+            '/tarefas/grupo/' + encodeURIComponent(state.group)
+        );
 
-    state.tasks = Array.isArray(d) ? d : [];
+        state.tasks = Array.isArray(d) ? d : [];
 
-    renderTasks();
-    renderHome();
+        renderTasks();
+        renderHome();
 
-  } catch (e) {
-    state.tasks = [];
+    } catch (e) {
+        state.tasks = [];
 
-    renderTasks();
-    renderHome();
+        renderTasks();
+        renderHome();
 
-    toast(e.message, true);
-  }
+        toast(e.message, true);
+    }
 }
 
 async function loadCoins() {
-  try {
-    const d = await api('/pomodoros/moedas');
+    try {
+        const d = await api('/pomodoros/moedas');
 
-    state.coins = Number(
-      typeof d === 'number'
-        ? d
-        : (
-          d.moedas ??
-          d.saldo ??
-          d.total_moedas ??
-          0
-        )
-    );
+        state.coins = Number(
+            typeof d === 'number'
+                ? d
+                : (
+                    d.moedas ??
+                    d.saldo ??
+                    d.total_moedas ??
+                    0
+                )
+        );
 
-    $('#coins').innerHTML =
-      `${state.coins} <small>nozes</small>`;
+        $('#coins').innerHTML =
+            `${state.coins} <small>nozes</small>`;
 
-    $('#shopCoins').textContent = state.coins;
+        $('#shopCoins').textContent = state.coins;
 
-  } catch {
-    // Não interrompe o carregamento da aplicação.
-  }
+    } catch {
+        // Não interrompe o carregamento da aplicação.
+    }
 }
 
 function dateLabel(t) {
-  if (!t.dthr_prazo) return 'Sem prazo';
+    if (!t.dthr_prazo) return 'Sem prazo';
 
-  const d = new Date(t.dthr_prazo);
+    const d = new Date(t.dthr_prazo);
 
-  return isNaN(d.getTime())
-    ? 'Prazo: ' + t.dthr_prazo
-    : 'Prazo: ' + d.toLocaleDateString(
-      'pt-BR',
-      {
-        day: '2-digit',
-        month: 'short'
-      }
-    );
+    return isNaN(d.getTime())
+        ? 'Prazo: ' + t.dthr_prazo
+        : 'Prazo: ' + d.toLocaleDateString(
+            'pt-BR',
+            {
+                day: '2-digit',
+                month: 'short'
+            }
+        );
 }
 
 function taskHTML(t) {
-  const done = Boolean(
-    t.concluida ||
-    t.concluido ||
-    t.status === 'concluida' ||
-    t.status === 'concluído'
-  );
+    const done = Boolean(
+        t.concluida ||
+        t.concluido ||
+        t.status === 'concluida' ||
+        t.status === 'concluído'
+    );
 
-  return `
+    return `
     <article class="task ${done ? 'completed' : ''}">
       <button
         class="check ${done ? 'done' : ''}"
@@ -346,30 +346,30 @@ function taskHTML(t) {
 }
 
 function renderTasks() {
-  const el = $('#taskList');
-  if (!el) return;
+    const el = $('#taskList');
+    if (!el) return;
 
-  el.innerHTML = !state.group
-    ? '<div class="empty">Crie um grupo para desenhar sua trilha.</div>'
-    : state.tasks.length
-      ? state.tasks.map(taskHTML).join('')
-      : '<div class="empty">Essa trilha ainda está começando. Adicione sua primeira tarefa! 🌱</div>';
+    el.innerHTML = !state.group
+        ? '<div class="empty">Crie um grupo para desenhar sua trilha.</div>'
+        : state.tasks.length
+            ? state.tasks.map(taskHTML).join('')
+            : '<div class="empty">Essa trilha ainda está começando. Adicione sua primeira tarefa! 🌱</div>';
 
-  $('#taskCount').textContent =
-    `${state.tasks.length} tarefa(s)`;
+    $('#taskCount').textContent =
+        `${state.tasks.length} tarefa(s)`;
 
-  $('#taskTotal').textContent = state.tasks.length;
+    $('#taskTotal').textContent = state.tasks.length;
 }
 
 function renderHome() {
-  const el = $('#homeTasks');
-  if (!el) return;
+    const el = $('#homeTasks');
+    if (!el) return;
 
-  el.innerHTML = state.tasks.length
-    ? state.tasks.slice(0, 4).map(taskHTML).join('')
-    : '<div class="empty">Suas tarefas vão aparecer aqui. Crie um grupo e dê o primeiro passo!</div>';
+    el.innerHTML = state.tasks.length
+        ? state.tasks.slice(0, 4).map(taskHTML).join('')
+        : '<div class="empty">Suas tarefas vão aparecer aqui. Crie um grupo e dê o primeiro passo!</div>';
 
-  $('#taskTotal').textContent = state.tasks.length;
+    $('#taskTotal').textContent = state.tasks.length;
 }
 
 // ==========================================
@@ -377,35 +377,35 @@ function renderHome() {
 // ==========================================
 
 function modal(title, desc, html, submit) {
-  $('#modalTitle').textContent = title;
-  $('#modalDesc').textContent = desc;
-  $('#modalForm').innerHTML = html;
+    $('#modalTitle').textContent = title;
+    $('#modalDesc').textContent = desc;
+    $('#modalForm').innerHTML = html;
 
-  $('#modal').classList.remove('hidden');
+    $('#modal').classList.remove('hidden');
 
-  $('#modalForm').onsubmit = async e => {
-    e.preventDefault();
+    $('#modalForm').onsubmit = async e => {
+        e.preventDefault();
 
-    const d = Object.fromEntries(
-      new FormData(e.currentTarget).entries()
-    );
+        const d = Object.fromEntries(
+            new FormData(e.currentTarget).entries()
+        );
 
-    try {
-      await submit(d);
-      $('#modal').classList.add('hidden');
-    } catch (err) {
-      toast(err.message, true);
-    }
-  };
+        try {
+            await submit(d);
+            $('#modal').classList.add('hidden');
+        } catch (err) {
+            toast(err.message, true);
+        }
+    };
 }
 
 $('#closeModal').onclick = () =>
-  $('#modal').classList.add('hidden');
+    $('#modal').classList.add('hidden');
 
 $('#modal').addEventListener('click', e => {
-  if (e.target.id === 'modal') {
-    $('#modal').classList.add('hidden');
-  }
+    if (e.target.id === 'modal') {
+        $('#modal').classList.add('hidden');
+    }
 });
 
 // ==========================================
@@ -413,11 +413,11 @@ $('#modal').addEventListener('click', e => {
 // ==========================================
 
 function createGroup() {
-  modal(
-    'Criar uma trilha',
-    'Separe tarefas por matéria, projeto ou objetivo.',
+    modal(
+        'Criar uma trilha',
+        'Separe tarefas por matéria, projeto ou objetivo.',
 
-    `
+        `
       <label>
         Nome do grupo
 
@@ -434,21 +434,21 @@ function createGroup() {
       </button>
     `,
 
-    async d => {
-      const r = await api('/grupos/', {
-        method: 'POST',
-        data: d
-      });
+        async d => {
+            const r = await api('/grupos/', {
+                method: 'POST',
+                data: d
+            });
 
-      toast(r.mensagem || 'Grupo criado!');
+            toast(r.mensagem || 'Grupo criado!');
 
-      await loadGroups();
+            await loadGroups();
 
-      $('#groupSelect').value = state.group;
+            $('#groupSelect').value = state.group;
 
-      await loadTasks();
-    }
-  );
+            await loadTasks();
+        }
+    );
 }
 
 // ==========================================
@@ -456,15 +456,15 @@ function createGroup() {
 // ==========================================
 
 function createTask(task = null) {
-  if (!state.groups.length) {
-    toast('Primeiro, crie um grupo para sua trilha.');
-    createGroup();
-    return;
-  }
+    if (!state.groups.length) {
+        toast('Primeiro, crie um grupo para sua trilha.');
+        createGroup();
+        return;
+    }
 
-  const edit = !!task;
+    const edit = !!task;
 
-  const html = `
+    const html = `
     <label>
       Título
 
@@ -494,93 +494,90 @@ function createTask(task = null) {
         type="datetime-local"
         name="dthr_prazo"
         value="${esc(
-          task?.dthr_prazo
+        task?.dthr_prazo
             ? String(task.dthr_prazo).replace(' ', 'T').slice(0, 16)
             : ''
-        )}"
+    )}"
       >
     </label>
 
-    ${
-      edit
-        ? ''
-        : `
+    ${edit
+            ? ''
+            : `
           <label>
             Grupo
 
             <select name="fk_grupo" required>
-              ${
-                state.groups.map(g => `
+              ${state.groups.map(g => `
                   <option
                     value="${g.id_grupo}"
-                    ${
-                      String(g.id_grupo) === state.group
-                        ? 'selected'
-                        : ''
-                    }
+                    ${String(g.id_grupo) === state.group
+                    ? 'selected'
+                    : ''
+                }
                   >
                     ${esc(g.titulo || 'Grupo ' + g.id_grupo)}
                   </option>
                 `).join('')
-              }
+            }
             </select>
           </label>
         `
-    }
+        }
 
     <button class="primary">
       ${edit ? 'Salvar alterações' : 'Adicionar à trilha'} →
     </button>
   `;
 
-  modal(
-    edit ? 'Editar tarefa' : 'Nova tarefa',
+    modal(
+        edit ? 'Editar tarefa' : 'Nova tarefa',
 
-    edit
-      ? 'Ajuste os detalhes do seu próximo passo.'
-      : 'Pequenos passos também contam.',
-
-    html,
-
-    async d => {
-      const data = {
-        titulo: d.titulo,
-        descricao: d.descricao || ''
-      };
-
-      if (edit) {
-        await api('/tarefas/' + task.id_tarefa, {
-          method: 'PUT',
-          data
-        });
-
-      } else {
-        data.fk_grupo = d.fk_grupo;
-        data.frequencia = 0;
-
-        data.dthr_prazo = d.dthr_prazo
-          ? d.dthr_prazo.replace('T', ' ')
-          : '';
-
-        state.group = String(d.fk_grupo);
-
-        $('#groupSelect').value = state.group;
-
-        await api('/tarefas/', {
-          method: 'POST',
-          data
-        });
-      }
-
-      toast(
         edit
-          ? 'Tarefa atualizada!'
-          : 'Tarefa adicionada à trilha!'
-      );
+            ? 'Ajuste os detalhes do seu próximo passo.'
+            : 'Pequenos passos também contam.',
 
-      await loadTasks();
-    }
-  );
+        html,
+
+        async d => {
+            const data = {
+                titulo: d.titulo,
+                descricao: d.descricao || ''
+            };
+
+            if (edit) {
+                await api('/tarefas/' + task.id_tarefa, {
+                    method: 'PUT',
+                    data
+                });
+
+            } else {
+                data.fk_grupo = d.fk_grupo;
+                data.frequencia = 0;
+
+                data.dthr_prazo = d.dthr_prazo
+                    ? d.dthr_prazo.replace('T', ' ')
+                    : '';
+
+                state.group = String(d.fk_grupo);
+
+                $('#groupSelect').value = state.group;
+
+                await api('/tarefas/', {
+                    method: 'POST',
+                    data
+                });
+            }
+
+            toast(
+                edit
+                    ? 'Tarefa atualizada!'
+                    : 'Tarefa adicionada à trilha!'
+            );
+
+            await loadTasks();
+        }
+    );
 }
 
 async function taskAction(e) {
@@ -631,99 +628,99 @@ async function taskAction(e) {
         }
     }
 }
-  if (
+if (
     b.dataset.act === 'delete' &&
     confirm('Deseja excluir esta tarefa?')
-  ) {
+) {
     try {
-      const r = await api('/tarefas/' + id, {
-        method: 'DELETE'
-      });
+        const r = await api('/tarefas/' + id, {
+            method: 'DELETE'
+        });
 
-      toast(r.mensagem || 'Tarefa excluída');
+        toast(r.mensagem || 'Tarefa excluída');
 
-      await loadTasks();
+        await loadTasks();
 
     } catch (err) {
-      toast(err.message, true);
+        toast(err.message, true);
     }
-  }
 }
+
 
 // ==========================================
 // PERFIL
 // ==========================================
 
 async function loadProfile() {
-  try {
-    const p = await api('/perfis/');
+    try {
+        const p = await api('/perfis/');
 
-    if (p.mensagem === 'Perfil não encontrado.') {
-      state.profileExists = false;
-      return;
+        if (p.mensagem === 'Perfil não encontrado.') {
+            state.profileExists = false;
+            return;
+        }
+
+        state.profileExists = true;
+
+        const f = $('#profileForm');
+
+        for (const k of [
+            'objetivo',
+            'nivel_conhecimento',
+            'tempo_diario',
+            'dificuldade_foco'
+        ]) {
+            if (f.elements[k] && p[k] != null) {
+                f.elements[k].value = p[k];
+            }
+        }
+
+        if (p.dias_disponiveis) {
+            const days = String(p.dias_disponiveis)
+                .split(/[,;|]/)
+                .map(s => s.trim());
+
+            $$('.days input').forEach(c => {
+                c.checked = days.includes(c.value);
+            });
+        }
+
+    } catch (e) {
+        toast(e.message, true);
     }
-
-    state.profileExists = true;
-
-    const f = $('#profileForm');
-
-    for (const k of [
-      'objetivo',
-      'nivel_conhecimento',
-      'tempo_diario',
-      'dificuldade_foco'
-    ]) {
-      if (f.elements[k] && p[k] != null) {
-        f.elements[k].value = p[k];
-      }
-    }
-
-    if (p.dias_disponiveis) {
-      const days = String(p.dias_disponiveis)
-        .split(/[,;|]/)
-        .map(s => s.trim());
-
-      $$('.days input').forEach(c => {
-        c.checked = days.includes(c.value);
-      });
-    }
-
-  } catch (e) {
-    toast(e.message, true);
-  }
 }
 
 $('#profileForm').addEventListener('submit', async e => {
-  e.preventDefault();
+    e.preventDefault();
 
-  const f = e.currentTarget;
+    const f = e.currentTarget;
 
-  const d = Object.fromEntries(
-    new FormData(f).entries()
-  );
+    const d = Object.fromEntries(
+        new FormData(f).entries()
+    );
 
-  d.dias_disponiveis = $$('.days input:checked')
-    .map(c => c.value)
-    .join(',');
+    d.dias_disponiveis = $$('.days input:checked')
+        .map(c => c.value)
+        .join(',');
 
-  if (!d.dias_disponiveis) {
-    toast('Escolha pelo menos um dia para estudar.', true);
-    return;
-  }
+    if (!d.dias_disponiveis) {
+        toast('Escolha pelo menos um dia para estudar.', true);
+        return;
+    }
 
-  try {
-    const r = await api('/perfis/', {
-      method: state.profileExists ? 'PUT' : 'POST',
-      data: d
-    });
+    try {
+        const r = await api('/perfis/', {
+            method: state.profileExists ? 'PUT' : 'POST',
+            data: d
+        });
 
-    state.profileExists = true;
+        state.profileExists = true;
 
-    toast(r.mensagem || 'Perfil salvo!');
+        toast(r.mensagem || 'Perfil salvo!');
 
-  } catch (err) {
-    toast(err.message, true);
-  }
+    } catch (err) {
+        toast(err.message, true);
+    }
 });
 
 // ==========================================
@@ -731,18 +728,18 @@ $('#profileForm').addEventListener('submit', async e => {
 // ==========================================
 
 function shop() {
-  const items = [
-    ['🧥', 'Moletom do Pipo', 'Roupinhas', 120],
-    ['🧢', 'Boné aventureiro', 'Chapéus', 120],
-    ['👓', 'Óculos redondinhos', 'Acessórios', 50],
-    ['🎒', 'Mochila de aventura', 'Acessórios', 150],
-    ['🧣', 'Cachecol quentinho', 'Roupinhas', 90],
-    ['🌼', 'Tiara de flores', 'Acessórios', 75],
-    ['🎩', 'Chapéu de explorador', 'Chapéus', 130],
-    ['⭐', 'Broche de estrela', 'Acessórios', 60]
-  ];
+    const items = [
+        ['🧥', 'Moletom do Pipo', 'Roupinhas', 120],
+        ['🧢', 'Boné aventureiro', 'Chapéus', 120],
+        ['👓', 'Óculos redondinhos', 'Acessórios', 50],
+        ['🎒', 'Mochila de aventura', 'Acessórios', 150],
+        ['🧣', 'Cachecol quentinho', 'Roupinhas', 90],
+        ['🌼', 'Tiara de flores', 'Acessórios', 75],
+        ['🎩', 'Chapéu de explorador', 'Chapéus', 130],
+        ['⭐', 'Broche de estrela', 'Acessórios', 60]
+    ];
 
-  $('#shopGrid').innerHTML = items.map((it, i) => `
+    $('#shopGrid').innerHTML = items.map((it, i) => `
     <article class="shop-item">
       <div class="item-art">${it[0]}</div>
       <h3>${it[1]}</h3>
@@ -757,14 +754,14 @@ function shop() {
 }
 
 $('#shopGrid').addEventListener('click', e => {
-  const b = e.target.closest('[data-shop]');
+    const b = e.target.closest('[data-shop]');
 
-  if (b) {
-    toast(
-      'A loja do Pipo ainda é visual: o backend precisa de rotas de compra e inventário para desbloquear itens.',
-      true
-    );
-  }
+    if (b) {
+        toast(
+            'A loja do Pipo ainda é visual: o backend precisa de rotas de compra e inventário para desbloquear itens.',
+            true
+        );
+    }
 });
 
 // ==========================================
@@ -772,128 +769,128 @@ $('#shopGrid').addEventListener('click', e => {
 // ==========================================
 
 function formatTime(n) {
-  return (
-    `${String(Math.floor(n / 60)).padStart(2, '0')}:` +
-    `${String(n % 60).padStart(2, '0')}`
-  );
+    return (
+        `${String(Math.floor(n / 60)).padStart(2, '0')}:` +
+        `${String(n % 60).padStart(2, '0')}`
+    );
 }
 
 function setTimer(m) {
-  state.minutes = m;
-  state.seconds = m * 60;
-  state.total = state.seconds;
-  state.running = false;
-
-  clearInterval(state.timer);
-  state.timer = null;
-
-  $('#timer').textContent = formatTime(state.seconds);
-
-  $('#modeLabel').textContent =
-    m === 5 ? 'TEMPO DE PAUSA' : 'TEMPO DE FOCO';
-
-  $('#timerStatus').textContent =
-    'O Pipo está aqui com você.';
-
-  $('#startTimer').textContent = 'Começar foco';
-
-  $$('.presets button').forEach(b => {
-    b.classList.toggle(
-      'chosen',
-      Number(b.dataset.min) === m
-    );
-  });
-}
-
-async function finishTimer() {
-  clearInterval(state.timer);
-
-  state.timer = null;
-  state.running = false;
-
-  $('#startTimer').textContent = 'Começar novamente';
-
-  $('#timerStatus').textContent =
-    'Sessão concluída. Muito bem! ✨';
-
-  toast('Você reservou um tempo para si. Parabéns!');
-
-  if (state.minutes !== 5) {
-    try {
-      const d = await api('/pomodoros/ativo');
-
-      if (d.id_pomodoro) {
-        await api(
-          '/pomodoros/finalizar/' + d.id_pomodoro,
-          { method: 'PUT' }
-        );
-      }
-
-    } catch {
-      // A sessão visual termina mesmo se a API falhar.
-    }
-
-    await loadCoins();
-  }
-}
-
-async function toggleTimer() {
-  if (state.running) {
+    state.minutes = m;
+    state.seconds = m * 60;
+    state.total = state.seconds;
     state.running = false;
 
     clearInterval(state.timer);
     state.timer = null;
 
-    $('#startTimer').textContent = 'Continuar';
+    $('#timer').textContent = formatTime(state.seconds);
+
+    $('#modeLabel').textContent =
+        m === 5 ? 'TEMPO DE PAUSA' : 'TEMPO DE FOCO';
 
     $('#timerStatus').textContent =
-      'Pausa. Continue quando quiser.';
+        'O Pipo está aqui com você.';
 
-    return;
-  }
+    $('#startTimer').textContent = 'Começar foco';
 
-  if (state.seconds <= 0) {
-    setTimer(state.minutes);
-  }
+    $$('.presets button').forEach(b => {
+        b.classList.toggle(
+            'chosen',
+            Number(b.dataset.min) === m
+        );
+    });
+}
 
-  if (state.minutes !== 5) {
-    try {
-      const d = await api('/pomodoros/iniciar', {
-        method: 'POST',
-        data: { duracao: state.minutes }
-      });
+async function finishTimer() {
+    clearInterval(state.timer);
 
-      if (d.mensagem?.includes('andamento')) {
-        const active = await api('/pomodoros/ativo');
+    state.timer = null;
+    state.running = false;
 
-        if (!active.id_pomodoro) {
-          throw Error(d.mensagem);
+    $('#startTimer').textContent = 'Começar novamente';
+
+    $('#timerStatus').textContent =
+        'Sessão concluída. Muito bem! ✨';
+
+    toast('Você reservou um tempo para si. Parabéns!');
+
+    if (state.minutes !== 5) {
+        try {
+            const d = await api('/pomodoros/ativo');
+
+            if (d.id_pomodoro) {
+                await api(
+                    '/pomodoros/finalizar/' + d.id_pomodoro,
+                    { method: 'PUT' }
+                );
+            }
+
+        } catch {
+            // A sessão visual termina mesmo se a API falhar.
         }
-      }
 
-    } catch (e) {
-      toast(e.message, true);
-      return;
+        await loadCoins();
     }
-  }
+}
 
-  state.running = true;
+async function toggleTimer() {
+    if (state.running) {
+        state.running = false;
 
-  $('#startTimer').textContent = 'Pausar';
+        clearInterval(state.timer);
+        state.timer = null;
 
-  $('#timerStatus').textContent =
-    'Um minuto de cada vez.';
+        $('#startTimer').textContent = 'Continuar';
 
-  state.timer = setInterval(() => {
-    state.seconds--;
+        $('#timerStatus').textContent =
+            'Pausa. Continue quando quiser.';
 
-    $('#timer').textContent =
-      formatTime(Math.max(0, state.seconds));
+        return;
+    }
 
     if (state.seconds <= 0) {
-      finishTimer();
+        setTimer(state.minutes);
     }
-  }, 1000);
+
+    if (state.minutes !== 5) {
+        try {
+            const d = await api('/pomodoros/iniciar', {
+                method: 'POST',
+                data: { duracao: state.minutes }
+            });
+
+            if (d.mensagem?.includes('andamento')) {
+                const active = await api('/pomodoros/ativo');
+
+                if (!active.id_pomodoro) {
+                    throw Error(d.mensagem);
+                }
+            }
+
+        } catch (e) {
+            toast(e.message, true);
+            return;
+        }
+    }
+
+    state.running = true;
+
+    $('#startTimer').textContent = 'Pausar';
+
+    $('#timerStatus').textContent =
+        'Um minuto de cada vez.';
+
+    state.timer = setInterval(() => {
+        state.seconds--;
+
+        $('#timer').textContent =
+            formatTime(Math.max(0, state.seconds));
+
+        if (state.seconds <= 0) {
+            finishTimer();
+        }
+    }, 1000);
 }
 
 // ==========================================
@@ -901,116 +898,116 @@ async function toggleTimer() {
 // ==========================================
 
 function renderPipoMessage(text, type = 'bot') {
-  const box = $('#pipoChatMessages');
+    const box = $('#pipoChatMessages');
 
-  if (!box) return;
+    if (!box) return;
 
-  const message = document.createElement('div');
+    const message = document.createElement('div');
 
-  message.className = `pipo-message ${type}`;
-  message.textContent = text;
+    message.className = `pipo-message ${type}`;
+    message.textContent = text;
 
-  box.appendChild(message);
-  box.scrollTop = box.scrollHeight;
+    box.appendChild(message);
+    box.scrollTop = box.scrollHeight;
 }
 
 async function sendPipoMessage(text) {
-  if (state.pipoSending) return;
+    if (state.pipoSending) return;
 
-  state.pipoSending = true;
+    state.pipoSending = true;
 
-  renderPipoMessage(text, 'user');
+    renderPipoMessage(text, 'user');
 
-  const historico = state.pipoHistory.slice(-8);
+    const historico = state.pipoHistory.slice(-8);
 
-  const params = {
-    mensagem: text,
-    historico: JSON.stringify(historico)
-  };
+    const params = {
+        mensagem: text,
+        historico: JSON.stringify(historico)
+    };
 
-  try {
-    const resposta = await api('/apoio/mensagem', {
-      method: 'POST',
-      data: params
-    });
+    try {
+        const resposta = await api('/apoio/mensagem', {
+            method: 'POST',
+            data: params
+        });
 
-    renderPipoMessage(
-      resposta.resposta || 'Estou aqui para te ouvir.'
-    );
+        renderPipoMessage(
+            resposta.resposta || 'Estou aqui para te ouvir.'
+        );
 
-    if (resposta.pergunta) {
-      renderPipoMessage(resposta.pergunta);
+        if (resposta.pergunta) {
+            renderPipoMessage(resposta.pergunta);
+        }
+
+        state.pipoHistory.push({
+            mensagem: text,
+            categoria: resposta.categoria,
+            resposta: resposta.resposta
+        });
+
+        state.pipoHistory = state.pipoHistory.slice(-8);
+
+        if (resposta.prioridade_humana) {
+            renderPipoMessage(
+                'Você não precisa passar por isso sozinho(a). Procure alguém de confiança ou um serviço de apoio humano. Se houver perigo imediato, procure um serviço de emergência.'
+            );
+        }
+
+    } catch (error) {
+        renderPipoMessage(
+            'Não consegui responder agora. Tente novamente em instantes.'
+        );
+
+        toast(error.message, true);
+
+    } finally {
+        state.pipoSending = false;
+
+        const input = $('#pipoChatInput');
+        const button = $('#pipoChatForm button');
+
+        if (input) {
+            input.disabled = false;
+            input.focus();
+        }
+
+        if (button) {
+            button.disabled = false;
+        }
     }
-
-    state.pipoHistory.push({
-      mensagem: text,
-      categoria: resposta.categoria,
-      resposta: resposta.resposta
-    });
-
-    state.pipoHistory = state.pipoHistory.slice(-8);
-
-    if (resposta.prioridade_humana) {
-      renderPipoMessage(
-        'Você não precisa passar por isso sozinho(a). Procure alguém de confiança ou um serviço de apoio humano. Se houver perigo imediato, procure um serviço de emergência.'
-      );
-    }
-
-  } catch (error) {
-    renderPipoMessage(
-      'Não consegui responder agora. Tente novamente em instantes.'
-    );
-
-    toast(error.message, true);
-
-  } finally {
-    state.pipoSending = false;
-
-    const input = $('#pipoChatInput');
-    const button = $('#pipoChatForm button');
-
-    if (input) {
-      input.disabled = false;
-      input.focus();
-    }
-
-    if (button) {
-      button.disabled = false;
-    }
-  }
 }
 
 function setupPipoChat() {
-  const form = $('#pipoChatForm');
+    const form = $('#pipoChatForm');
 
-  if (!form || form.dataset.initialized === 'true') {
-    return;
-  }
-
-  form.dataset.initialized = 'true';
-
-  form.addEventListener('submit', event => {
-    event.preventDefault();
-
-    const input = $('#pipoChatInput');
-
-    if (!input) return;
-
-    const texto = input.value.trim();
-
-    if (!texto || state.pipoSending) return;
-
-    input.value = '';
-    input.disabled = true;
-
-    const button = $('#pipoChatForm button');
-
-    if (button) {
-      button.disabled = true;
+    if (!form || form.dataset.initialized === 'true') {
+        return;
     }
 
-    sendPipoMessage(texto);
-  });
+    form.dataset.initialized = 'true';
+
+    form.addEventListener('submit', event => {
+        event.preventDefault();
+
+        const input = $('#pipoChatInput');
+
+        if (!input) return;
+
+        const texto = input.value.trim();
+
+        if (!texto || state.pipoSending) return;
+
+        input.value = '';
+        input.disabled = true;
+
+        const button = $('#pipoChatForm button');
+
+        if (button) {
+            button.disabled = true;
+        }
+
+        sendPipoMessage(texto);
+    });
 }
 
 // ==========================================
@@ -1018,45 +1015,45 @@ function setupPipoChat() {
 // ==========================================
 
 $('#loginForm').addEventListener('submit', async e => {
-  e.preventDefault();
+    e.preventDefault();
 
-  const d = Object.fromEntries(
-    new FormData(e.currentTarget).entries()
-  );
+    const d = Object.fromEntries(
+        new FormData(e.currentTarget).entries()
+    );
 
-  try {
-    const r = await api('/usuarios/login', {
-      method: 'POST',
-      data: d,
-      auth: false
-    });
+    try {
+        const r = await api('/usuarios/login', {
+            method: 'POST',
+            data: d,
+            auth: false
+        });
 
-    if (!r.token) {
-      throw Error(
-        r.mensagem || 'Confira seu e-mail e senha.'
-      );
+        if (!r.token) {
+            throw Error(
+                r.mensagem || 'Confira seu e-mail e senha.'
+            );
+        }
+
+        state.token = r.token;
+        state.name = r.usuario || 'Estudante';
+
+        localStorage.setItem(
+            'entretempos_token',
+            state.token
+        );
+
+        localStorage.setItem(
+            'entretempos_name',
+            state.name
+        );
+
+        enterApp();
+
+        toast('Que bom ter você de volta!');
+
+    } catch (err) {
+        toast(err.message, true);
     }
-
-    state.token = r.token;
-    state.name = r.usuario || 'Estudante';
-
-    localStorage.setItem(
-      'entretempos_token',
-      state.token
-    );
-
-    localStorage.setItem(
-      'entretempos_name',
-      state.name
-    );
-
-    enterApp();
-
-    toast('Que bom ter você de volta!');
-
-  } catch (err) {
-    toast(err.message, true);
-  }
 });
 
 // ==========================================
@@ -1064,38 +1061,38 @@ $('#loginForm').addEventListener('submit', async e => {
 // ==========================================
 
 $('#registerForm').addEventListener('submit', async e => {
-  e.preventDefault();
+    e.preventDefault();
 
-  const d = Object.fromEntries(
-    new FormData(e.currentTarget).entries()
-  );
-
-  d.data_nascimento = d.data_nascimento.replaceAll('-', '');
-
-  try {
-    const r = await api('/usuarios/cadastro', {
-      method: 'POST',
-      data: d,
-      auth: false
-    });
-
-    if (!/cadastrado com sucesso/i.test(r.mensagem || '')) {
-      throw Error(
-        r.mensagem || 'Não foi possível criar a conta.'
-      );
-    }
-
-    toast(
-      'Conta criada! Agora entre com seu e-mail e senha.'
+    const d = Object.fromEntries(
+        new FormData(e.currentTarget).entries()
     );
 
-    showAuth('login');
+    d.data_nascimento = d.data_nascimento.replaceAll('-', '');
 
-    $('#loginForm [name=email]').value = d.email;
+    try {
+        const r = await api('/usuarios/cadastro', {
+            method: 'POST',
+            data: d,
+            auth: false
+        });
 
-  } catch (err) {
-    toast(err.message, true);
-  }
+        if (!/cadastrado com sucesso/i.test(r.mensagem || '')) {
+            throw Error(
+                r.mensagem || 'Não foi possível criar a conta.'
+            );
+        }
+
+        toast(
+            'Conta criada! Agora entre com seu e-mail e senha.'
+        );
+
+        showAuth('login');
+
+        $('#loginForm [name=email]').value = d.email;
+
+    } catch (err) {
+        toast(err.message, true);
+    }
 });
 
 // ==========================================
@@ -1103,15 +1100,15 @@ $('#registerForm').addEventListener('submit', async e => {
 // ==========================================
 
 $$('[data-tab]').forEach(b => {
-  b.onclick = () => showAuth(b.dataset.tab);
+    b.onclick = () => showAuth(b.dataset.tab);
 });
 
 $('#forgot').onclick = () => {
-  modal(
-    'Recuperar senha',
-    'Informe o e-mail cadastrado para solicitar as instruções.',
+    modal(
+        'Recuperar senha',
+        'Informe o e-mail cadastrado para solicitar as instruções.',
 
-    `
+        `
       <label>
         E-mail
 
@@ -1128,18 +1125,18 @@ $('#forgot').onclick = () => {
       </button>
     `,
 
-    async d => {
-      const r = await api('/recuperacao/solicitar', {
-        method: 'POST',
-        data: d,
-        auth: false
-      });
+        async d => {
+            const r = await api('/recuperacao/solicitar', {
+                method: 'POST',
+                data: d,
+                auth: false
+            });
 
-      toast(
-        r.mensagem || 'Confira sua caixa de entrada'
-      );
-    }
-  );
+            toast(
+                r.mensagem || 'Confira sua caixa de entrada'
+            );
+        }
+    );
 };
 
 // ==========================================
@@ -1149,11 +1146,11 @@ $('#forgot').onclick = () => {
 $('#logout').onclick = logout;
 
 $$('[data-page]').forEach(b => {
-  b.onclick = () => navigate(b.dataset.page);
+    b.onclick = () => navigate(b.dataset.page);
 });
 
 $$('[data-go]').forEach(b => {
-  b.onclick = () => navigate(b.dataset.go);
+    b.onclick = () => navigate(b.dataset.go);
 });
 
 $('#newGroup').onclick = createGroup;
@@ -1161,8 +1158,8 @@ $('#newGroup').onclick = createGroup;
 $('#newTask').onclick = () => createTask();
 
 $('#groupSelect').onchange = e => {
-  state.group = e.target.value;
-  loadTasks();
+    state.group = e.target.value;
+    loadTasks();
 };
 
 $('#taskList').addEventListener('click', taskAction);
@@ -1170,7 +1167,7 @@ $('#taskList').addEventListener('click', taskAction);
 $('#homeTasks').addEventListener('click', taskAction);
 
 $$('.presets button').forEach(b => {
-  b.onclick = () => setTimer(Number(b.dataset.min));
+    b.onclick = () => setTimer(Number(b.dataset.min));
 });
 
 $('#startTimer').onclick = toggleTimer;
@@ -1186,7 +1183,7 @@ setTimer(25);
 setupPipoChat();
 
 if (state.token) {
-  enterApp();
+    enterApp();
 } else {
-  showAuth();
+    showAuth();
 }
