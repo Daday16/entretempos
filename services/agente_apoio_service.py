@@ -1,10 +1,7 @@
 
-"""
-Agente local de apoio do Pipo.
-Não utiliza APIs externas nem armazena conversas.
-"""
 import random
 import re
+import unicodedata
 
 
 class AgenteApoioService:
@@ -13,17 +10,17 @@ class AgenteApoioService:
         "ansiedade": [
             "ansioso", "ansiosa", "ansiedade", "nervoso",
             "nervosa", "preocupado", "preocupada",
-            "aflito", "aflita"
+            "aflito", "aflita", "preocupacao", "agoniado"
         ],
         "desanimo": [
             "desanimado", "desanimada", "desmotivado",
             "desmotivada", "sem vontade", "incapaz",
-            "fracassei", "fracasso"
+            "fracassei", "fracasso", "sem motivacao"
         ],
         "frustracao": [
             "frustrado", "frustrada", "irritado",
             "irritada", "com raiva", "deu errado",
-            "não deu certo", "falhei"
+            "nao deu certo", "falhei"
         ],
         "cansaco": [
             "cansado", "cansada", "exausto", "exausta",
@@ -31,9 +28,9 @@ class AgenteApoioService:
             "sobrecarregado", "sobrecarregada"
         ],
         "solidao": [
-            "sozinho", "sozinha", "solitário",
-            "solitária", "ninguém me entende",
-            "não tenho ninguém"
+            "sozinho", "sozinha", "solitario",
+            "solitaria", "ninguem me entende",
+            "nao tenho ninguem"
         ],
         "medo": [
             "medo de falhar", "medo de errar",
@@ -41,10 +38,10 @@ class AgenteApoioService:
             "insegura"
         ],
         "foco": [
-            "procrastinando", "procrastinação",
-            "não consigo focar", "sem foco",
-            "distraído", "distraída",
-            "não consigo começar"
+            "procrastinando", "procrastinacao",
+            "nao consigo focar", "sem foco",
+            "distraido", "distraida", "nao consigo comecar",
+            "nao consigo terminar"
         ],
         "felicidade": [
             "feliz", "consegui", "conquista",
@@ -52,89 +49,93 @@ class AgenteApoioService:
             "animada", "empolgado", "empolgada"
         ],
         "confusao": [
-            "confuso", "confusa", "não entendi",
+            "confuso", "confusa", "nao entendi",
             "perdido", "perdida",
-            "não sei por onde começar"
+            "nao sei por onde comecar"
+        ],
+        "sobrecarga": [
+            "muita coisa", "muitas coisas",
+            "coisas demais", "nao dou conta",
+            "tudo acumulado", "tarefas acumuladas",
+            "estou sobrecarregado", "estou sobrecarregada"
         ]
     }
 
     RESPOSTAS = {
         "ansiedade": [
-            "Parece que sua cabeça está tentando resolver muitas coisas ao mesmo tempo. Vamos com calma: você não precisa dar conta de tudo agora.",
-            "Sinto muito que esse momento esteja tão agitado. Que tal fazer uma pausa, respirar devagar e escolher só o próximo passo?",
-            "Quando a preocupação cresce, tudo pode parecer urgente. Vamos separar o que precisa ser resolvido hoje do que pode esperar?"
+            "Parece que sua cabeca esta tentando resolver muitas coisas ao mesmo tempo. Vamos por partes.",
+            "Quando tudo parece urgente, fica dificil pensar. Vamos identificar o que realmente precisa de atencao agora.",
+            "Respire um pouco. Voce nao precisa resolver tudo de uma vez. Vamos pensar apenas no proximo passo."
         ],
-
         "desanimo": [
-            "Um momento difícil não apaga tudo o que você já construiu. Talvez hoje o passo possível seja bem pequeno, e tudo bem.",
-            "Você não precisa estar motivado o tempo todo para continuar. Às vezes, descansar e recomeçar devagar já é bastante.",
-            "Não transforme uma dificuldade em uma definição sobre quem você é. Vamos pensar em uma coisa pequena que esteja ao seu alcance?"
+            "Um dia dificil nao apaga tudo o que voce ja conquistou. Que tal comecar com algo bem pequeno?",
+            "Voce nao precisa estar motivado o tempo todo. Um pequeno passo ja pode ajudar a retomar o ritmo.",
+            "Nao transforme uma dificuldade em uma definicao sobre voce. Vamos tentar de outro jeito?"
         ],
-
         "frustracao": [
-            "É compreensível ficar frustrado quando algo não sai como você esperava. Quer me contar o que aconteceu para tentarmos olhar por outro ângulo?",
-            "Errar ou precisar tentar de novo faz parte do processo. Vamos descobrir qual pedacinho pode ser ajustado, sem cobrança?",
-            "Parece que isso mexeu com você. Antes de tentar resolver, talvez valha dar um minuto para essa frustração baixar."
+            "Entendo que isso tenha sido frustrante. Vamos descobrir o que pode ser ajustado para tentar novamente.",
+            "Nem sempre as coisas saem como planejamos. O importante agora e entender o que aconteceu.",
+            "Tudo bem precisar tentar de novo. Qual parte voce gostaria de resolver primeiro?"
         ],
-
         "cansaco": [
-            "Seu descanso também faz parte do progresso. Talvez seu corpo esteja pedindo uma pausa, não mais cobrança.",
-            "Quando a energia acaba, até tarefas simples pesam. Que tal escolher entre descansar um pouco ou fazer só uma etapa curtinha?",
-            "Você não precisa transformar todo minuto em produtividade. Pausar também é cuidar do caminho."
+            "Seu descanso tambem faz parte do progresso. Talvez seja hora de fazer uma pausa.",
+            "Quando a energia acaba, ate tarefas simples pesam. Vamos diminuir o ritmo?",
+            "Voce nao precisa transformar todo minuto em produtividade. Pausar tambem e importante."
         ],
-
         "solidao": [
-            "Deve ser difícil sentir que está passando por isso sem companhia. Obrigado por dividir um pouco comigo. Existe alguém de confiança com quem você poderia conversar também?",
-            "Você merece ser ouvido e acolhido. Posso te escutar nesta conversa, e também pode ajudar procurar alguém em quem confie.",
-            "Sentir-se só pode pesar bastante. Quer me contar o que tem feito você se sentir assim?"
+            "Deve ser dificil sentir que esta passando por isso sem companhia. Quer me contar um pouco mais?",
+            "Voce merece ser ouvido e acolhido. Existe alguem de confianca com quem possa conversar?",
+            "Obrigado por dividir isso comigo. Podemos conversar com calma, sem pressa."
         ],
-
         "medo": [
-            "Ter medo não significa que você não é capaz. Podemos diminuir o tamanho do desafio e pensar no primeiro passo mais seguro.",
-            "Você não precisa ter certeza de tudo para começar. O que seria uma tentativa pequena, que não precise sair perfeita?",
-            "Às vezes a possibilidade de errar parece maior do que realmente é. Vamos entender o que exatamente está te preocupando?"
+            "Ter medo nao significa que voce nao e capaz. Podemos dividir esse desafio em etapas menores.",
+            "Voce nao precisa ter certeza de tudo para comecar. Qual seria um primeiro passo seguro?",
+            "Vamos entender o que esta causando esse receio e pensar em uma forma de lidar com isso."
         ],
-
         "foco": [
-            "Começar costuma ser a parte mais difícil. Que tal combinar apenas cinco minutos com uma única tarefa, sem compromisso de terminar tudo?",
-            "Vamos deixar o caminho mais simples: escolha uma tarefa, afaste uma distração e faça só o primeiro pedacinho.",
-            "Talvez não seja falta de capacidade, mas excesso de coisas competindo pela sua atenção. O que mais está te distraindo agora?"
+            "Vamos facilitar: escolha uma tarefa e dedique apenas cinco minutos a ela.",
+            "Tente afastar uma distracao e comece pela menor parte da atividade. Nao precisa terminar tudo agora.",
+            "Comecar pode ser a parte mais dificil. Qual tarefa podemos dividir em pequenas etapas?"
         ],
-
         "felicidade": [
-            "Que notícia boa! 🌰✨ Reconheça essa conquista: você colocou esforço nisso e merece comemorar.",
-            "O Pipo está comemorando com você! Cada avanço merece ser notado. O que foi a melhor parte dessa conquista?",
-            "Que orgulho desse passinho! Guarde essa sensação para lembrar que seu esforço pode render frutos."
+            "Que noticia boa! Cada conquista merece ser reconhecida. Parabens pelo seu esforco!",
+            "O Pipo esta comemorando com voce! O que foi mais especial nessa conquista?",
+            "Que orgulho desse avancao! Valorize cada passo que voce conseguiu dar."
         ],
-
         "confusao": [
-            "Tudo bem ainda não ter clareza. Vamos organizar juntos: qual é a parte que parece mais confusa neste momento?",
-            "Quando tudo parece misturado, ajuda separar em partes menores. Qual é a primeira dúvida que você gostaria de resolver?",
-            "Você não precisa entender tudo de uma vez. Me conte o que já conseguiu compreender e onde começou a dúvida."
+            "Tudo bem ainda nao ter clareza. Vamos organizar as ideias uma de cada vez.",
+            "Quando tudo parece misturado, ajuda separar em partes menores. O que precisa ser resolvido primeiro?",
+            "Voce nao precisa entender tudo de uma vez. Vamos comecar pela sua principal duvida."
         ],
-
+        "sobrecarga": [
+            "Parece que tem coisa demais acontecendo ao mesmo tempo. Vamos listar tudo e escolher apenas uma prioridade?",
+            "Quando muitas tarefas se acumulam, fica dificil saber por onde comecar. Vamos separar o urgente do que pode esperar?",
+            "Nao precisamos resolver tudo agora. Escolha uma tarefa pequena e vamos avancar passo a passo."
+        ],
         "acolhimento": [
-            "Obrigado por compartilhar isso comigo. Não precisa encontrar as palavras perfeitas; podemos ir com calma.",
-            "Estou aqui para te ouvir nesta conversa. O que está pesando mais para você neste momento?",
-            "Faz sentido querer um pouco de acolhimento. Quer me contar um pouco mais sobre como foi seu dia?"
+            "Estou aqui para te ouvir. O que esta pesando mais neste momento?",
+            "Obrigado por compartilhar isso comigo. Podemos conversar com calma.",
+            "Vamos por partes. Me conte um pouco mais sobre o que esta acontecendo."
         ]
     }
 
     PERGUNTAS = {
-        "ansiedade": "O que está deixando você mais preocupado(a) agora?",
-        "desanimo": "Aconteceu alguma coisa hoje que trouxe esse sentimento?",
+        "ansiedade": "O que esta deixando voce mais preocupado agora?",
+        "desanimo": "Qual seria uma pequena coisa que voce conseguiria fazer hoje?",
         "frustracao": "O que aconteceu? Podemos pensar juntos em uma alternativa.",
-        "cansaco": "Você sente que precisa descansar ou tem algo específico te sobrecarregando?",
-        "solidao": "Tem alguém de confiança com quem você gostaria de conversar sobre isso?",
-        "medo": "Qual é a parte que mais dá medo neste desafio?",
-        "foco": "Qual tarefa você gostaria de tentar começar por cinco minutos?",
+        "cansaco": "Voce sente que precisa descansar ou tem algo especifico te sobrecarregando?",
+        "solidao": "Tem alguem de confianca com quem voce gostaria de conversar?",
+        "medo": "Qual e a parte que mais da medo nesse desafio?",
+        "foco": "Qual tarefa voce gostaria de tentar comecar por cinco minutos?",
         "felicidade": "Quer me contar como conseguiu essa conquista?",
-        "confusao": "Qual é a primeira parte que você gostaria de organizar?"
+        "confusao": "Qual e a primeira coisa que precisamos organizar?",
+        "sobrecarga": "Quais tarefas estao acumuladas? Podemos definir uma prioridade juntos."
     }
 
     SINAIS_DE_RISCO = [
         r"\b(quero|vou|penso em|pensando em) (me )?(matar|suicidar|suicidio|tirar minha vida)\b",
-        r"\b(nao quero) mais viver\b",
+        r"\b(quero|vou|penso em|pensando em) morrer\b",
+        r"\bnao quero mais viver\b",
         r"\b(me )?(machucar|ferir)\b",
         r"\b(acabar com|tirar) (a )?minha vida\b",
         r"\bseria melhor se eu nao existisse\b"
@@ -143,8 +144,9 @@ class AgenteApoioService:
     def responder(self, mensagem: str, historico=None):
 
         texto = self._normalizar(mensagem)
+        historico = historico if isinstance(historico, list) else []
 
-        # Prioriza mensagens que indicam risco à segurança.
+        # Identifica mensagens que indicam risco a seguranca.
         if any(
             re.search(padrao, texto)
             for padrao in self.SINAIS_DE_RISCO
@@ -152,24 +154,24 @@ class AgenteApoioService:
             return {
                 "categoria": "seguranca",
                 "resposta": (
-                    "Sinto muito que você esteja passando por algo tão doloroso. "
-                    "Obrigado por me contar. Sua segurança é importante e você "
-                    "não precisa lidar com isso sozinho(a). Se houver risco imediato, "
-                    "procure um serviço de emergência ou vá a uma UPA/pronto-socorro. "
-                    "No Brasil, você também pode ligar para o CVV no 188, "
-                    "gratuitamente, 24 horas. Se puder, aproxime-se agora de alguém "
-                    "de confiança e conte como está se sentindo."
+                    "Sinto muito que voce esteja passando por algo tao doloroso. "
+                    "Obrigado por me contar. Sua seguranca e importante e voce "
+                    "nao precisa lidar com isso sozinho(a). Se houver risco imediato, "
+                    "procure um servico de emergencia ou va a uma UPA/pronto-socorro. "
+                    "No Brasil, voce tambem pode ligar para o CVV no 188, "
+                    "gratuitamente, 24 horas. Se puder, aproxime-se agora de alguem "
+                    "de confianca e conte como esta se sentindo."
                 ),
                 "pergunta": (
-                    "Você está em perigo imediato ou pensando em se machucar agora?"
+                    "Voce esta em perigo imediato ou pensando em se machucar agora?"
                 ),
                 "prioridade_humana": True
             }
 
         categoria = self._identificar_categoria(texto)
 
-        # Mantém o tema recente quando a resposta é curta.
-        if categoria == "acolhimento" and historico:
+        # Aproveita o contexto em respostas curtas.
+        if categoria == "acolhimento" and len(texto.split()) <= 5:
             for item in reversed(historico[-6:]):
                 anterior = item.get("categoria")
 
@@ -177,14 +179,28 @@ class AgenteApoioService:
                     categoria = anterior
                     break
 
-        resposta = random.choice(self.RESPOSTAS[categoria])
+        respostas = self.RESPOSTAS[categoria]
+
+        # Evita repetir as respostas mais recentes.
+        respostas_recentes = [
+            item.get("resposta")
+            for item in historico[-3:]
+            if isinstance(item, dict)
+        ]
+
+        alternativas = [
+            resposta for resposta in respostas
+            if resposta not in respostas_recentes
+        ]
+
+        resposta = random.choice(alternativas or respostas)
 
         return {
             "categoria": categoria,
             "resposta": resposta,
             "pergunta": self.PERGUNTAS.get(
                 categoria,
-                "Quer me contar um pouco mais sobre o que está acontecendo?"
+                "Quer me contar um pouco mais sobre o que esta acontecendo?"
             ),
             "prioridade_humana": False
         }
@@ -192,12 +208,14 @@ class AgenteApoioService:
     def _identificar_categoria(self, texto):
 
         for categoria, palavras in self.CATEGORIAS.items():
+            for palavra in palavras:
+                palavra = self._normalizar(palavra)
 
-            if any(
-                self._normalizar(palavra) in texto
-                for palavra in palavras
-            ):
-                return categoria
+                if re.search(
+                    r"\b" + re.escape(palavra) + r"\b",
+                    texto
+                ):
+                    return categoria
 
         return "acolhimento"
 
@@ -206,9 +224,11 @@ class AgenteApoioService:
 
         texto = str(texto or "").lower().strip()
 
-        tabela = str.maketrans(
-            "áàãâéêíóôõúç",
-            "aaaaeeiooouc"
+        texto = unicodedata.normalize("NFD", texto)
+
+        texto = "".join(
+            caractere for caractere in texto
+            if unicodedata.category(caractere) != "Mn"
         )
 
-        return texto.translate(tabela)
+        return texto
