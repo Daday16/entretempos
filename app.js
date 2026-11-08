@@ -601,7 +601,6 @@ async function taskAction(e) {
             });
 
             toast(r.mensagem || 'Tarefa concluída!');
-
             await loadTasks();
             await loadCoins();
 
@@ -628,41 +627,7 @@ async function taskAction(e) {
         }
     }
 }
-if (
-    b.dataset.act === 'delete' &&
-    confirm('Deseja excluir esta tarefa?')
-) {
-    try {
-        const r = await api('/tarefas/' + id, {
-            method: 'DELETE'
-        });
 
-        toast(r.mensagem || 'Tarefa excluída');
-
-        await loadTasks();
-
-    } catch (err) {
-        toast(err.message, true);
-    }
-}
-
-
-// ==========================================
-// PERFIL
-// ==========================================
-
-async function loadProfile() {
-    try {
-        const p = await api('/perfis/');
-
-        if (p.mensagem === 'Perfil não encontrado.') {
-            state.profileExists = false;
-            return;
-        }
-
-        state.profileExists = true;
-
-        const f = $('#profileForm');
 
         for (const k of [
             'objetivo',
