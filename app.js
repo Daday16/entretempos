@@ -628,7 +628,19 @@ async function taskAction(e) {
     }
 }
 
+async function loadProfile() {
+    const f = $('#profileForm');
+    if (!f) return;
 
+    try {
+        const p = await api('/perfis/');
+
+        if (!p || p.mensagem === 'Perfil não encontrado.') {
+            state.profileExists = false;
+            return;
+        }
+
+        state.profileExists = true;
         for (const k of [
             'objetivo',
             'nivel_conhecimento',
