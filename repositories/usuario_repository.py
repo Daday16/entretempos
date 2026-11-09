@@ -9,6 +9,7 @@ from psycopg2.extras import RealDictCursor
 def listar_usuarios():
 
     banco = conectar_banco()
+    cursor = None
 
     try:
         cursor = banco.cursor(cursor_factory=RealDictCursor)
@@ -20,7 +21,8 @@ def listar_usuarios():
         return usuarios
 
     finally:
-        cursor.close()
+        if cursor is not None:
+            cursor.close()
         banco.close()
 
 
@@ -51,7 +53,6 @@ def criar_usuario(usuario):
 
         banco.commit()
 
-        # Confirma que o cadastro foi realizado.
         return True
 
     except Exception:
@@ -61,13 +62,41 @@ def criar_usuario(usuario):
     finally:
         if cursor is not None:
             cursor.close()
-
         banco.close()
+
+
+# Busca um usuário pelo e-mail.
+def buscar_por_email(email):
+
+    banco = conectar_banco()
+    cursor = None
+
+    try:
+        cursor = banco.cursor(cursor_factory=RealDictCursor)
+
+        comando = """
+            SELECT *
+            FROM usuarios
+            WHERE email = %s
+        """
+
+        cursor.execute(comando, (email,))
+
+        usuario = cursor.fetchone()
+
+        return usuario
+
+    finally:
+        if cursor is not None:
+            cursor.close()
+        banco.close()
+
 
 # Atualiza a senha de um usuário.
 def atualizar_senha(id_usuario, nova_senha):
 
     banco = conectar_banco()
+    cursor = None
 
     try:
         cursor = banco.cursor()
@@ -96,5 +125,6 @@ def atualizar_senha(id_usuario, nova_senha):
         raise
 
     finally:
-        cursor.close()
+        if cursor is not None:
+            cursor.close()
         banco.close()
