@@ -1,6 +1,6 @@
-# Importa o FastAPI para criar nossa aplicação.
-from fastapi import FastAPI
 
+from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
 
 # Importa as rotas de usuários.
 from routes.usuarios import router as usuarios_router
@@ -20,46 +20,42 @@ from routes.pomodoros import router as pomodoros_router
 # Importa as rotas de recuperação de senha.
 from routes.recuperacao import router as recuperacao_router
 
+# Importa a rota do agente de apoio.
+from routes.apoio import router as apoio_router
+
 
 # Cria a aplicação principal do Entretempos.
-app = FastAPI()
+app = FastAPI(
+    title="Entretempos",
+    description="API do Ninho do Foco",
+    version="1.0.0"
+)
 
 
-# Conecta as rotas de usuários à aplicação.
-app.include_router(usuarios_router)
-
-# Conecta as rotas de perfil à aplicação.
-app.include_router(perfis_router)
-
-# Conecta as rotas de tarefas à aplicação.
-app.include_router(tarefas_router)
-
-# Conecta as rotas de grupos à aplicação.
-app.include_router(grupos_router)
-
-# Conecta as rotas de Pomodoro à aplicação.
-app.include_router(pomodoros_router)
-
-# Conecta as rotas de recuperação de senha à aplicação.
-app.include_router(recuperacao_router)
-
-
-# Rota principal usada para testar se o backend está funcionando.
-@app.get("/")
-def inicio():
-    # Retorna uma mensagem quando acessamos a página inicial.
-    return {"mensagem": "Entretempos funcionando!"}
-
-from fastapi.middleware.cors import CORSMiddleware
-from routes.apoio import router as apoio_router
-app.include_router(apoio_router)
+# Configuração CORS.
 app.add_middleware(
     CORSMiddleware,
     allow_origins=[
         "https://entretempos-ivory.vercel.app",
-        "https://entretempos.onrender.com",
     ],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+
+# Conecta todas as rotas à aplicação.
+app.include_router(usuarios_router)
+app.include_router(perfis_router)
+app.include_router(tarefas_router)
+app.include_router(grupos_router)
+app.include_router(pomodoros_router)
+app.include_router(recuperacao_router)
+app.include_router(apoio_router)
+
+
+# Rota principal para testar o funcionamento.
+@app.get("/")
+def inicio():
+    return {"mensagem": "Entretempos funcionando!"}
+
